@@ -114,6 +114,50 @@
 
         // Set this if you have a custom token to use for authentication, otherwise leave as null
         const initialAuthToken = null; // User provided: null
+    </script>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signInWithCustomToken, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+
+        // Function to display authentication-related notifications
+        function showAuthNotification(message, isError = true) {
+            const notificationId = 'auth-notification-popup';
+            let notificationDiv = document.getElementById(notificationId);
+
+            // Avoid showing duplicate notifications if message is the same
+            if (notificationDiv && notificationDiv.querySelector('p.text-md')?.textContent === message) return;
+            if (notificationDiv) notificationDiv.remove(); // Remove old one if exists
+
+            notificationDiv = document.createElement('div');
+            notificationDiv.id = notificationId;
+            // Full screen overlay for the notification
+            notificationDiv.className = 'fixed inset-0 bg-slate-900 bg-opacity-80 flex items-center justify-center p-4 sm:p-6';
+            notificationDiv.style.zIndex = '10000'; // Ensure it's on top
+
+            const messageBox = document.createElement('div');
+            // Styling for the message box itself
+            messageBox.className = 'bg-white p-6 sm:p-8 rounded-xl shadow-2xl text-slate-800 max-w-md sm:max-w-lg text-center animate-fadeInUp';
+
+            // Inner HTML for the notification, with conditional icons and text
+            messageBox.innerHTML = `
+                <div class="mx-auto flex items-center justify-center h-12 w-12 sm:h-16 sm:w-16 rounded-full ${isError ? 'bg-red-100' : 'bg-sky-100'} mb-4 sm:mb-6">
+                    ${isError ? `
+                    <svg class="h-6 w-6 sm:h-8 sm:w-8 text-red-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+                    </svg>` : `
+                    <svg class="h-6 w-6 sm:h-8 sm:w-8 text-sky-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+                    </svg>
+                    `}
+                </div>
+                <h2 class="text-xl sm:text-2xl font-bold ${isError ? 'text-red-700' : 'text-sky-700'} mb-2 sm:mb-3">${isError ? 'Authentication Issue' : 'Authentication Required'}</h2>
+                <p class="text-sm sm:text-md text-slate-600 mb-4 sm:mb-5">${message}</p>
+                ${isError ? '<p class="text-xs sm:text-sm text-slate-500 animate-pulse">You might be redirected or need to refresh...</p>' : '<p class="text-xs sm:text-sm text-slate-500 animate-pulse">Attempting to sign you in...</p>'}
+            `;
+            notificationDiv.appendChild(messageBox);
+            document.body.appendChild(notificationDiv);
+        }
 
         let app;
         let auth;
